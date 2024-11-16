@@ -1,0 +1,86 @@
+<% layout("/layouts/boilerplate.ejs")%>
+
+<body>
+    
+    <div id="filters">
+        <div class="filter mt-3">
+          <div><i class="fa-solid fa-fire"></i></div>  
+          <p>Trending</p>
+        </div>
+        <div class="filter mt-3">
+            <div><i class="fa-solid fa-bed"></i></div>  
+            <p>Room</p>
+          </div>
+          <div class="filter mt-3">
+            <div><i class="fa-solid fa-mountain-city"></i></div>  
+            <p>Iconic Cities</p>
+          </div>
+          <div class="filter mt-3">
+            <div><i class="fa-solid fa-mountain"></i></div>  
+            <p>Mountains</p>
+          </div>
+          <div class="filter mt-3">
+            <div><i class="fa-brands fa-fort-awesome"></i></div>  
+            <p>Castles</p>
+          </div>
+          <div class="filter mt-3">
+            <div><i class="fa-solid fa-person-swimming"></i></div>  
+            <p>Amazing Pools</p>
+          </div>
+          <div class="filter mt-3">
+            <div><i class="fa-solid fa-campground"></i></div>  
+            <p>Camping</p>
+          </div><div class="filter mt-3">
+            <div><i class="fa-solid fa-cow"></i></div>  
+            <p>Farms</p>
+          </div><div class="filter mt-3">
+            <div><i class="fa-solid fa-snowflake"></i></div>  
+            <p>Arctic</p>
+          </div>
+          <div class="filter mt-3">
+            <div><i class="fa-solid fa-person-swimming"></i></div>  
+            <p>Amazing Pools</p>
+          </div>
+
+          <div class="tax-toggle ms-auto mt-3">
+            <div class="form-check-reverse form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                <label class="form-check-label" for="flexSwitchCheckDefault">Display Total After Taxes</label>
+              </div>
+          </div>
+
+    </div>
+    
+    <div class="row index-view row-cols-lg-3 row-cols-md-2 row-cols-sm-1 ">
+        
+        <%for(list of allListings){%>
+                <div class="card index-card mt-3 col">    
+                <a class="img-anchor" href="http://localhost:8080/listings/<%=list._id%>">
+            <div class="list">
+                 <img src="<%=list.img.url%>" alt="/img">
+                <b><p><%=list.title%></p></b>
+                <p class="price-without-tax">&#x20B9;<%=list.price.toLocaleString("en-IN")%>/night</p>
+                <p class="price-with-tax">&#x20B9;<%=((118/100)*list.price).toLocaleString("en-IN")%>/night</p>
+            </div>
+               </a>
+               </div>
+             <%}%>
+    </div>
+
+    <div class="main">
+        <%for(list of allListings){%>
+            <div class="index-card">    
+            <a class="img-anchor" href="http://localhost:8080/listings/<%=list._id%>">
+        <div class="list">
+             <img src="<%=list.img.url%>" alt="/img">
+            <b><p><%=list.title%></p></b>
+            <p class="price-without-tax">&#x20B9;<%=list.price.toLocaleString("en-IN")%>/night</p>
+            <p class="price-with-tax">&#x20B9;<%=((118/100)*list.price).toLocaleString("en-IN")%>/night</p>
+        </div>
+           </a>
+           </div>
+         <%}%>
+    </div>
+        
+</body>
+

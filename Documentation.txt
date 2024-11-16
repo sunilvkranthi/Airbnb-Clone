@@ -1,0 +1,399 @@
+TO BEGIN WITH:
+Database set up
+REST APIs for CRUD operations.
+
+SETUP:
+1.setup the express application with the standard setup.
+2.connect the db.
+3.create the models required for the project.
+
+CREATE THE REST APIs FOR CRUD OPERATIONS:
+1. get(/listings) - for showing the home page.    READ
+2. get(/listings/new) & post(/listings) - for creating a new instance.     Create
+3. get(/listings/:id) - to show the instance info.
+4. get(/listings/:id/edit) & put(/listings/:id) - to update the information of the instance.   update.
+5. delete(/listings/:id) -- to delete the instance .   delete.
+
+CREATE VIEWS FOR EACH API:
+1.use ejs-mate for boiler plates <%-layout%>
+2.use <%-include%> for including bits.
+3.use ejs files for the views 
+4.link bootstrap and use it's styling.
+
+
+BACKEND MIDDLEWARES:
+Request ------------> Middlewares --------------> Responese
+Middlewares: these are the functions in express that come into play after the server receives a request and before the response is sent to the client.
+example:
+methodOverride ------------> used to utlize the PUT, Delete methods.
+
+WHAT DO MIDDLEWARES DO?
+1.Execute the code
+2.Make changes to the request and response objects
+3.End the request-response cycle
+4.call the next middleware function in the stack.
+
+MIDDLEWARES:---------------> THEY ARE IMPLEMENTED WITH   app.use(()=>{console.log("middleware")});
+---> we can also use "req" and "res" objects in middlewares.
+
+middleware-------> response or next();
+
+If the current middleware function does not end the request-response cycle then it has to explicitly call the next() function to pass the control to the next middleware functions.
+
+we can send the middleware functions as a parameter in the method functions, we can send such multiple middleware functions.
+
+
+DEFAULT ERROR MIDDLEWARE IN EXPRESS:
+it's status is set to 500 and this middleware function is placed at the end of the middleware call stack by default.
+---> we can also send the personal error messages by using the following code:
+  throw new Error("error message"); ------> it will throw the error.
+
+
+
+CUSTOM ERROR HANDLING:
+ Note: when we write next(err)-------> we are calling the next error handling middleware i.e. express default error handler.
+
+to create the custom error handlers, we need to create a custom error class with constructor to use it wherever error handling is required.
+the following code has to be used to create the custom error handling class.:
+
+class ExpressError extends Error{
+    constructor(status,message){
+        super();
+        this.status=status;
+        this.message=message;
+    }
+};
+module.exports = ExpressError;
+
+the following is the custom error handling function:
+
+app.use((err,req,res,next)=>{
+    let {status=500,message="Something went wrong!"} = err;
+    res.status(status).render("error.ejs",{message});
+})
+
+
+HANDLING ASYNC ERRORS:
+
+when an error occurs during an async operation it cannot call the next function, hence the server will crash as it cannot be handled by the error handler middleware. So in the async functions, we have to through the error through next, such as:
+next(throw new ExpressError(404,"page not found"));
+this is how the, we have to explicitly call the next function to handle the async errors.
+we can also use try catch blocks to handle the errors. As async error are so many.
+
+
+
+WRAPASYNC:
+
+function asyncWrap(fn){
+   
+    return function(req,res,next){
+         fn(req,res,next).catch((err)=>next(err));
+      }
+};
+
+
+the above function can be used to wrap the async functions. simply use this function with the async function as a parameter, this function will return a function, which will act as the call back and that function will execute original call back function with the catch to handle the errors. this procedure will reduce the usage of try and catch blocks.
+
+NOTE:
+we can encounter different types of errors, we need to handle different errors with different procedures. we have to create function variables and use them to handle the specific errors.
+
+
+
+VALIDATION:
+
+CLIENT SIDE    AND  SERVER SIDE.
+
+CLIENT SIDE VALIDATION:
+keep the input fields as required. which will enforce the user to input the necessary information. Also style the client validation  (novalidate   class="needs-validation")
+
+Note: we can also use valid-feedback and invalid-feedback. for success and failure messages.
+
+SERVER SIDE VALIDATION:
+use the constraints
+
+we will use "JOI" to validate the schema for the server side validation.
+
+Use JOI and create the joi object to validate the schema, now use schema.validate function to validate the schema. 
+
+create a middleware which validates the schema using the above function and then if an error occurs it will throw an error with the error message or else it will call the next() function. now pass this function as a middleware in the callback stack wherever the schema validation is required in the req.body.
+
+
+DATABASE RELATIONSHIPS:
+these are the relationships between the models.
+
+SQL RELATIONSHIPS:
+one to one: country name ----> one pm/one cm
+
+one to many:user-----> multiple posts.
+
+many to many: students------> subjects.
+
+MONGO RELATIONSHIPS (ONE TO MANY):
+ONE TO FEW: We will directly write the child document in the parent document, without creating a seperate database model.
+
+ONE TO MANY:In this approach, we will create a seperate database model and we will save the id of the child document in the parent document. the type will be "ID", with the "ref"->reference of the child document.
+
+when ever we want to extract the data, if we want the complete information of the child document we have to expand it, with the "populate" function which will populate the information of the object name mentioned in the populate function.
+
+ONE TO SQUILLION:in this approach, we will take the opposite approach to the approach in the above case, in this case we will save the parent details as a reference in the child document. which is opposite to the approach followed in the second case.
+
+NOTES: https://www.mongodb.com/blog/post/6-rules-of-thumb-for-mongodb-schema-design
+
+
+HANDLING DELETION (CASCADING THE DELETION):
+example: when a user account gets deleted, all his posts has to be deleted from the database.
+
+listingSchema.post("findOneAndDelete",async (list)=>{
+    if(list.reviews.length){
+        await Review.deleteMany({_id:{$in:list.reviews}});
+    }
+});
+
+We can use the "pre" and "post" middlewares to handle the queries and deletion.
+
+
+POPULATE:
+When ever we use the one for many approach, the reference stores the id, while accessing the database information, we need to populate such kind of elements, to do that we use populate function.
+
+PULL:
+when we delete a  review that has to be removed from the listings as well, in order to do that we have to pull that review from the associated listing (opposite to pushing), updating the listing and then deleting the review.
+
+
+Routers:
+const router = express.Router()  // creates a router object
+routing is used to create the separate routes. 
+
+{mergeParams:true} - is used to merge the params in the main page to child page.
+
+
+COOKIES:
+HTTP Cookies are small blocks of data created by a web server while a user is browsing a website and placed on the user's computer or ther device by the user's web browser.
+
+The server sets the cookies:
+
+app.get("/setcookies",(req,res)=>{
+    
+    res.cookie("greet","namaste");
+    res.cookie("origin","India");
+    res.send("We sent you a cookie!");
+
+});
+
+COOKIE PARSER:
+cookie-parser package
+
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+req.cookies; is used to get the cookie information
+
+Signed Cookies:
+
+send Signed Cookie:
+
+app.use(cookieParse("secretCode"));
+
+creating a cookie:
+res.cookie("color","red",{signed:true});
+
+parsing a cookie:
+req.signedCookies;
+
+signed cookies are used to avoid tampering the cookie information.
+If the signed cookie value is replaced then when we access the signedCookies it will return an empty object. This is how the signed cookies work.
+If just the signed cookie value is tampered then it returns "false".
+
+Note: browsers categorizes the cookies into cookies and signedCookies.
+
+SESSIONS:
+Statefull protocol: stateful protocol require server to save the status and session information
+example: - ftp
+
+Stateless Protocol: Stateless protocol does not require the server to retain the server information.
+example: http.
+
+Express Session:
+it is used as an attempt to make the session statefull.
+
+every session has an sessionId.
+
+In  a session the related information is stored in the temporary storage, and the session id is stored at the client side as a cookie. The related information cannot be stored as cookies because, cookies has limit in sotring the values.
+
+the express session will store the related information in a temporary storage and returns the session id to client web browser as a cookie.
+
+to use the express session we need to download the express session package
+
+npm i express-session.
+
+app.use(session({
+
+   secret:"secretcode",
+   resave:false,
+   saveUninitialized:true,
+
+}));
+
+express session has a temporary storage called memoryStorage but it is used for the development purpose, but in the production environment we have to use other session storages.
+
+CONNECT-FLASH:The flash is a special area of the session used for storing messages.Messages are written to the flash and cleared after being displayed to the user. 
+
+for this we need to download connect-flash
+npm i connect-flash
+
+Flash is used with the combination of redirects (generally)
+
+Note: to use flash we should definitely use the session.
+
+req.flash("success","the post is created");
+
+the flash() function has two parameters, the first one is key and the second is the value.
+
+
+we can flash the message using the key:  req.flash("key");
+
+we can use res.locals.variable_name;  to create the variables for the render files, we can assign the flash values to these locals.variables and use them in the render pages.
+By creating the local variables, we dont have to explicitly pass the flash messages while rendering the ejs pages. these variables can be directly accessed in the ejs files.
+
+we can create a middleware which will save the flash messages in the res.locals variable.
+so whenever a flash message is created that will save the message in the res.locals and these locals.variables are already present in the ejs view pages hence the flash messages are shown on the webpage.
+
+when we use the session we can set the cookie values : expires, maxAge,httpOnly:true
+
+
+PASSWORDS:
+
+Storing passwords: we NEVER store the passwords as it is. We store their hashed forms.
+
+Salting: Passwords salting is technique to protect the password stored in the database by adding a string of 32 or more characters and then hashing them.
+
+
+
+PASSPORT : It is used for authentication middleware for node.js (popular tool).
+
+npm i passport
+npm i passport-local
+npm i passport-local-mongoose
+
+it has many strategy , example: facebook,spotify,microsoft,github,linkedin , etc.,
+
+one of such package is passport-local.
+
+
+
+to use the passport strategy we have to create the user model, then we have to plugin the passport to the user schema:
+
+User.plugin(passportLocalMongoose);
+
+we dont have to specify the username and password in the user schema because the plugin will automatically create it, as well as it will create the salt and hashed password.
+
+to use the passport we have to use the sessions.
+
+Configuring the passport:
+passport.initialize() : A middleware that initializes the passport.
+
+passport.session(): A user when browse from page to page, the user should be authenticated for all the requests, hence the passport uses the session.
+
+passport.use(new LocalStrategy(User.authenticate()));  //defines the strategy which we are using in the project.
+
+passport.serializeUser(User.serializeUser()));  //for serializing the user information into the session.
+passport.deserializeUser(User.deserializeUser()));  //for deserializing the user information from the session.
+
+
+When ever someone signup for the website:
+
+User.register(userVariable,"password");  //this method will save the user with the given password.
+
+
+/get signup
+/post signup //for signing up the user.
+
+/get login
+/post login  // to authenticate a user we have passport.authenticate() middleware which will do the authentication of the user:
+
+passport.authenticate("strategy",{failureRedirect: "/login",failureFlash:true});
+
+
+ 
+req.isAuthenticated() : is used to check whether a user is present or not.
+
+req.user stores the user information
+
+req.originalPath : has the path that is requested by the user ;
+
+to login after signing up we should use req.login() method.
+
+to logout the user we should use req.logout() method.
+
+before getting started with authorization, we need to declare the owners of the listings, then we can authorize the owners.
+
+AUTHORIZATION:
+
+to create authorization, the owner id has to be equal to the user._id; with this we can authorize the current users.
+
+Note: to increase the security in authorization.
+1. first restrict the user. ( the user cannot update or delete an item if he is not the owner of the entity).
+2. hide the options of delete or update or such buttons to the user if he is not the authorized person.
+
+
+MVC (Model, view, controller):
+try to build the project with the MVC framework, in which 
+M stands for model which defines how the database models are defined and work.
+v stands for views which defines the frontend (how the web pages look)
+c stands for controller which has the code which handles all the backend work. (which controls the entire website).
+
+Router.route:
+this method can be used to simplify the routing by accumulating the different http requests to the same url.
+
+
+Image upload:
+1.create the form which is capable of accepting the image files.
+2.use third party apps (cloudinary) to save the image files online
+3.the cloud app will provide the image url which can be saved in the database.
+
+to handle files we need set enctype="multipart/form-data" in the forms.
+but the express can handle only the urlencoded data. hance we need to use multer.
+
+multer: which is a node.js middleware to handle the multipart/form-data.
+
+req.body will have the urlencoded data, req.file will have the file data.
+
+using multer we can define the destination where the images will get stored. 
+using upload.single("filename") we can upload the image file to the destiny.
+
+whenever we use the cloud or other such third party applications, we need to create the env file to save the credentials as the environmental variables this file can be connected to the database use dotenv middleware which will connect the env variables to process.env.
+
+
+
+multer-storage-cloudinary: is the famous package to use the multer with the cloudinary cloud.
+
+setting up the cloud configuration will provide the access to the cloudinary account and then creating an object for the storage and defining the storage location and allowed formats then passing this storage object as the parameter to the multer will make the multer to store the images in the cloudinary at the specified location.
+
+
+
+MONGO ATLAS: (cloud database service)
+
+this provides the service to push our database to server so that we can deploy the project online.
+
+
+similarly to store the session information we need to use online services to store the session information, such as connect-mongo
+
+then using git, we need to push the entire project to GitHub then we can use the cloud platforms like render to deploy the project on to cloud.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
