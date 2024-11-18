@@ -26,7 +26,7 @@
         <%if( user && user._id.equals(list.owner._id)){%> 
           <div class="show-btns mt-3">
                 <div >
-                    <form method="GET" action="http://localhost:8080/listings/<%=list._id%>/edit">
+                    <form method="GET" action="/listings/<%=list._id%>/edit">
                         <button class="btn btn-dark ">Edit</button>
                     </form>
                 </div>
